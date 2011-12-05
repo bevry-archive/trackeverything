@@ -25,7 +25,10 @@ html lang: 'en', ->
 		text @content
 
 		# Scripts
-		text @blocks.scripts.join('')
-		script src: 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js'
-		script src: 'http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.0.6/modernizr.min.js'
+		script src: '/vendor/jquery-1.7.1.min.js'
+		script src: '/vendor/modernizr-2.0.6.min.js'
+		script src: '/vendor/underscore-1.2.2.min.js'
+		script src: '/vendor/backbone-0.5.3.min.js'
+		script src: '/vendor/xdate-0.5.min.js'
 		script src: '/scripts/script.js'
+		text @blocks.scripts.join('')

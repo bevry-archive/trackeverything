@@ -2,3 +2,60 @@
 @import 'https://raw.github.com/necolas/normalize.css/master/normalize.css'
 
 // Your Styles
+#templates
+	display: none
+
+.wrapper
+	min-width: 500px
+	width: 100%
+
+.tracker
+	height: 4em
+	position: relative
+
+	.start,
+	.finish
+		width: 25%
+		height: 2em
+		position: absolute
+		top: 0
+		left: 0
+
+	.progress
+		.logged,
+		.since
+			width: 25%
+			height: 1em
+			position: absolute
+			bottom: 0
+			left: 0
+			display: block
+			text-align: center
+		.logged
+			bottom: 1em
+		
+	time
+		font-style: italic
+	
+	.message
+		width: 75%
+		height: 4em
+		position: absolute
+		top: 0
+		right: 0
+
+.entries
+	.entry
+		position: relative
+		.start,
+		.finish,
+		.duration
+			width: 20%
+			display:block
+			float:left
+		.message
+			width: 40%
+			position: absolute
+			top: 0
+			right: 0
+
