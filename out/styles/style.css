@@ -7,6 +7,8 @@
 .tracker .progress .logged{bottom:1em}
 .tracker time{font-style:italic}
 .tracker .message{width:75%;height:4em;position:absolute;top:0;right:0}
-.entries .entry{position:relative;}
-.entries .entry .start,.entries .entry .finish,.entries .entry .duration{width:20%;display:block;float:left}
-.entries .entry .message{width:40%;position:absolute;top:0;right:0}
+.entries .entry{position:relative;clear:left;}
+.entries .entry .user,.entries .entry .start,.entries .entry .finish,.entries .entry .duration{width:10%;dispaly:block;float:left}
+.entries .entry .message{width:60%;position:absolute;top:0;right:0}
+.entries .entry .user .username,.entries .entry .user .name{display:none}
+.entries .entry .user .avatar{width:1em;height:1em;border-radius:5px}

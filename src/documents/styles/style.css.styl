@@ -47,15 +47,33 @@
 .entries
 	.entry
 		position: relative
+		clear: left
+
+		// +10% = 10%
+		// +10% = 20%
+		// +10% = 30%
+		// +10% = 40%
+		.user,
 		.start,
 		.finish,
 		.duration
-			width: 20%
-			display:block
-			float:left
+			width: 10%
+			dispaly: block
+			float: left
+
+		// +60% = 100%
 		.message
-			width: 40%
+			width: 60%
 			position: absolute
 			top: 0
 			right: 0
-
+		
+		// user
+		.user
+			.username, .name
+				display: none
+			.avatar
+				width: 1em
+				height: 1em
+				border-radius: 5px
+		

@@ -9,7 +9,7 @@ div "#templates", ->
 		button ".start", -> "Start Tracking"
 		button ".finish", -> "Stop Tracking"
 		div ".progress", ->
-			span ".logged", -> "Logged <time>4h 53m</time>"
+			span ".logged", -> "logging <time>4h 53m</time>"
 			span ".since", -> "since <time>12:53pm</time>"
 		input ".message", placeholder: "Log a message &hellip;"
 
@@ -17,6 +17,10 @@ div "#templates", ->
 		ul ".list", ->
 	
 	li ".entry", ->
+		div ".user", ->
+			span ".username", -> "balupton"
+			span ".name", -> "Benjamin Lupton"
+			img ".avatar", src: '/images/balupton.jpg'
 		time ".start", datetime:"2008-02-14", -> "5:53pm"
 		time ".finish", datetime:"2008-02-14", -> "6:53pm"
 		time '.duration', -> "1h 00m"

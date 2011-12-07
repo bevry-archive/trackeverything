@@ -21,23 +21,25 @@ View::renderTo = ($container) ->
 # =====================================
 # Models
 
-# Domain
-Models.Domain = Model.extend({
+# Group
+Models.Group = Model.extend({
 	_defaults:
 		slug: null
 		name: null
-		#users: null
+		admins: null # users
+		users: null
+		#domains: null
 		#entries: null
 })
 
-# Author
-Models.Author = Model.extend({
+# User
+Models.User = Model.extend({
 	_defaults:
 		username: null
 		name: null
 		email: null
 		password: null
-		#domains: null
+		#groups: null
 		#entries: null
 })
 
@@ -48,7 +50,11 @@ Models.Entry = Model.extend({
 		finish: null
 		duration: null
 		message: null
-		author: null
+		user: null
+		location: null # geolocation
+		privacy: null # user, group
+		mentions: null # users, groups
+	
 	finish: (message) ->
 		@set
 			message: message
@@ -60,20 +66,32 @@ Models.Entry = Model.extend({
 		start = new XDate @get('start')
 		finish = new XDate @get('finish') or new Date()
 		if start is finish
-			false
+			result = false
 		else
-			{
+			result = {
 				hours: Math.floor start.diffHours(finish)
 				minutes: Math.floor start.diffMinutes(finish)
 				seconds: Math.floor start.diffSeconds(finish)
 			}
+			result.seconds -= result.minutes*60
+			result.minutes -= result.hours*60
+		result
+})
+
+
+
+# =====================================
+# Collections
+
+# Entries
+Collections.Entries = Collection.extend({
+	model: Models.Entry
 })
 
 # App
 Models.App = Model.extend({
 	_defaults:
-		author: null
-		domain: null
+		user: null
 		entries: null
 	entries: ->
 		entries = @get('entries')
@@ -85,27 +103,30 @@ Models.App = Model.extend({
 
 
 # =====================================
-# Collections
-
-# Domains
-Collections.Domains = Collection.extend({
-	model: Models.Domain
-})
-
-# Authors
-Collections.Authors = Collection.extend({
-	model: Models.Author
-})
-
-# Entries
-Collections.Entries = Collection.extend({
-	model: Models.Entry
-})
-
-
-
-# =====================================
 # Views
+
+# DateTime
+Views.DateTime = View.extend({
+	render: ->
+		datetime = this.model
+		attr = datetime.toUTCString()
+		text = datetime.toLocaleTimeString()
+		@el = $(@el or '<time>').attr('datetime',attr).text(text)
+		@
+})
+
+# Duration
+Views.Duration = View.extend({
+	render: ->
+		duration = this.model
+		parts = []
+		parts.push "#{duration.hours}h"  if duration.hours
+		parts.push "#{duration.minutes}m"  if duration.minutes
+		parts.push "#{duration.seconds}s"  if duration.seconds
+		text = parts.join(' ')
+		@el = $(@el or '<time>').text(text)
+		@
+})
 
 # Entry
 Views.Entry = View.extend({
@@ -122,9 +143,9 @@ Views.Entry = View.extend({
 		finish = @model.get('finish')
 		duration = @model.duration()
 		message = @model.get('message')
-		@$start.attr('datetime',start.toUTCString()).text(start.toLocaleTimeString())
-		@$finish.attr('datetime',finish.toUTCString()).text(finish.toLocaleTimeString())
-		@$duration.text("#{duration.hours}h #{duration.minutes}m #{duration.seconds}s")
+		new Views.DateTime(el: @$start, model: start).render()
+		new Views.DateTime(el: @$finish, model: finish).render()
+		new Views.Duration(el: @$duration, model: duration).render()
 		if message
 			@$message.text(message)
 		else
@@ -175,8 +196,8 @@ Views.Tracker = View.extend({
 		@timerAction = =>
 			start = new XDate @entry.get('start')
 			duration = @entry.duration()
-			@$loggedTime.text "#{duration.hours}h #{duration.minutes}m #{duration.seconds}s"
-			@$sinceTime.text start.toLocaleTimeString()
+			new Views.DateTime(el: @$sinceTime, model: start).render()
+			new Views.Duration(el: @$loggedTime, model: duration).render()
 
 		# Actions
 		@$start.click => @start()
@@ -187,7 +208,7 @@ Views.Tracker = View.extend({
 	start: ->
 		@entry = new Models.Entry({
 			start: new Date()
-			author: App.get('author')
+			user: App.get('user')
 		})
 		@$start.hide()
 		@$finish.show()

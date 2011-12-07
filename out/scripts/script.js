@@ -19,14 +19,16 @@
     return this;
   };
 
-  Models.Domain = Model.extend({
+  Models.Group = Model.extend({
     _defaults: {
       slug: null,
-      name: null
+      name: null,
+      admins: null,
+      users: null
     }
   });
 
-  Models.Author = Model.extend({
+  Models.User = Model.extend({
     _defaults: {
       username: null,
       name: null,
@@ -41,7 +43,10 @@
       finish: null,
       duration: null,
       message: null,
-      author: null
+      user: null,
+      location: null,
+      privacy: null,
+      mentions: null
     },
     finish: function(message) {
       this.set({
@@ -54,25 +59,31 @@
       return this;
     },
     duration: function() {
-      var finish, start;
+      var finish, result, start;
       start = new XDate(this.get('start'));
       finish = new XDate(this.get('finish') || new Date());
       if (start === finish) {
-        return false;
+        result = false;
       } else {
-        return {
+        result = {
           hours: Math.floor(start.diffHours(finish)),
           minutes: Math.floor(start.diffMinutes(finish)),
           seconds: Math.floor(start.diffSeconds(finish))
         };
+        result.seconds -= result.minutes * 60;
+        result.minutes -= result.hours * 60;
       }
+      return result;
     }
+  });
+
+  Collections.Entries = Collection.extend({
+    model: Models.Entry
   });
 
   Models.App = Model.extend({
     _defaults: {
-      author: null,
-      domain: null,
+      user: null,
       entries: null
     },
     entries: function() {
@@ -88,16 +99,29 @@
     }
   });
 
-  Collections.Domains = Collection.extend({
-    model: Models.Domain
+  Views.DateTime = View.extend({
+    render: function() {
+      var attr, datetime, text;
+      datetime = this.model;
+      attr = datetime.toUTCString();
+      text = datetime.toLocaleTimeString();
+      this.el = $(this.el || '<time>').attr('datetime', attr).text(text);
+      return this;
+    }
   });
 
-  Collections.Authors = Collection.extend({
-    model: Models.Author
-  });
-
-  Collections.Entries = Collection.extend({
-    model: Models.Entry
+  Views.Duration = View.extend({
+    render: function() {
+      var duration, parts, text;
+      duration = this.model;
+      parts = [];
+      if (duration.hours) parts.push("" + duration.hours + "h");
+      if (duration.minutes) parts.push("" + duration.minutes + "m");
+      if (duration.seconds) parts.push("" + duration.seconds + "s");
+      text = parts.join(' ');
+      this.el = $(this.el || '<time>').text(text);
+      return this;
+    }
   });
 
   Views.Entry = View.extend({
@@ -112,9 +136,18 @@
       finish = this.model.get('finish');
       duration = this.model.duration();
       message = this.model.get('message');
-      this.$start.attr('datetime', start.toUTCString()).text(start.toLocaleTimeString());
-      this.$finish.attr('datetime', finish.toUTCString()).text(finish.toLocaleTimeString());
-      this.$duration.text("" + duration.hours + "h " + duration.minutes + "m " + duration.seconds + "s");
+      new Views.DateTime({
+        el: this.$start,
+        model: start
+      }).render();
+      new Views.DateTime({
+        el: this.$finish,
+        model: finish
+      }).render();
+      new Views.Duration({
+        el: this.$duration,
+        model: duration
+      }).render();
       if (message) {
         this.$message.text(message);
       } else {
@@ -161,8 +194,14 @@
         var duration, start;
         start = new XDate(_this.entry.get('start'));
         duration = _this.entry.duration();
-        _this.$loggedTime.text("" + duration.hours + "h " + duration.minutes + "m " + duration.seconds + "s");
-        return _this.$sinceTime.text(start.toLocaleTimeString());
+        new Views.DateTime({
+          el: _this.$sinceTime,
+          model: start
+        }).render();
+        return new Views.Duration({
+          el: _this.$loggedTime,
+          model: duration
+        }).render();
       };
       this.$start.click(function() {
         return _this.start();
@@ -178,7 +217,7 @@
     start: function() {
       this.entry = new Models.Entry({
         start: new Date(),
-        author: App.get('author')
+        user: App.get('user')
       });
       this.$start.hide();
       this.$finish.show();
